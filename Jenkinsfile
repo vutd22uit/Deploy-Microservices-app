@@ -10,17 +10,52 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                echo 'Building microservices...'
-                dir('product') {
-                    sh 'python -m pip install -r requirements.txt'
+                script {
+                    node {
+                        echo 'Building microservices...'
+                        dir('product') {
+                            sh 'python -m pip install -r requirements.txt'
+                        }
+                    }
                 }
             }
         }
         
         stage('Test') {
             steps {
-                dir('product') {
-                    sh 'python -m pytest tests/ || true'
+                script {
+                    node {
+                        dir('product') {
+                            sh 'python -m pytest tests/ || true'
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Docker Build') {
+            steps {
+                script {
+                    node {
+                        // Build Docker images
+                        dir('product') {
+                            docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Docker Push') {
+            steps {
+                script {
+                    node {
+                        docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
+                            def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
+                            productImage.push()
+                            productImage.push('latest')
+                        }
+                    }
                 }
             }
         }
@@ -28,7 +63,9 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    sh 'docker-compose up -d --build'
+                    node {
+                        sh 'docker-compose up -d'
+                    }
                 }
             }
         }
@@ -36,14 +73,21 @@ pipeline {
     
     post {
         always {
-            echo 'Cleaning up...'
-            sh 'docker-compose down || true'
+            node {
+                echo 'Cleaning up...'
+                sh 'docker-compose down || true'
+                cleanWs()
+            }
         }
         success {
-            echo 'Pipeline succeeded!'
+            node {
+                echo 'Pipeline succeeded!'
+            }
         }
         failure {
-            echo 'Pipeline failed!'
+            node {
+                echo 'Pipeline failed!'
+            }
         }
     }
 }
