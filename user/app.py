@@ -5,7 +5,7 @@ app = Flask(__name__)
 # Sample data for users
 users = [
     {"id": 1, "name": "Vegeta"},
-    {"id": 2, "name": "Goku"},
+    {"id": 2, "name": "Debug"},
 ]
 
 @app.route('/users', methods=['GET'])
