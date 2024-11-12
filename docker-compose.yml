@@ -6,7 +6,6 @@ services:
       - "5001:5001"
     networks:
       - microservices-network
-    restart: always
 
   product-service:
     build: ./product-service
@@ -16,7 +15,6 @@ services:
       - user-service
     networks:
       - microservices-network
-    restart: always
 
 networks:
   microservices-network:
