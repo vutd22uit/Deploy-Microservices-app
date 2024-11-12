@@ -2,19 +2,15 @@ from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
-# In-memory data storage for simplicity
-users = []
+# Sample data for users
+users = [
+    {"id": 1, "name": "Alice"},
+    {"id": 2, "name": "Bob"},
+]
 
 @app.route('/users', methods=['GET'])
 def get_users():
     return jsonify(users)
-
-@app.route('/users', methods=['POST'])
-def create_user():
-    user = request.json
-    user['id'] = len(users) + 1
-    users.append(user)
-    return jsonify(user), 201
 
 @app.route('/users/<int:user_id>', methods=['GET'])
 def get_user(user_id):
