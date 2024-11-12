@@ -57,6 +57,7 @@ pipeline {
         
         stage('Deploy') {
             steps {
+                // Sử dụng docker-compose up để chạy container mới
                 sh 'docker-compose up -d'
             }
         }
@@ -64,9 +65,8 @@ pipeline {
     
     post {
         always {
-            echo 'Cleaning up...'
-            sh 'docker-compose down || true'
-            cleanWs()
+            echo 'Cleaning up workspace...'
+            cleanWs() // chỉ dọn dẹp workspace, không xóa container
         }
         success {
             echo 'Pipeline succeeded!'
