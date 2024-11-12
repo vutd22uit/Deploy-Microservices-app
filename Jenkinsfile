@@ -65,9 +65,14 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // Dừng container cũ và kiểm tra cổng
+                // Stop and remove all existing containers
                 sh 'docker-compose down --remove-orphans || true'
-                // Khởi động container mới
+                sh 'docker rm -f $(docker ps -aq) || true'
+                
+                // Remove all old images
+                sh 'docker rmi -f $(docker images -q) || true'
+                
+                // Start new containers
                 sh 'docker-compose up -d --remove-orphans'
             }
         }
