@@ -38,17 +38,21 @@ pipeline {
             }
         }
         
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
+                }
+            }
+        }
+        
         stage('Docker Push') {
             steps {
                 script {
                     docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
                         def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
-                        try {
-                            productImage.push()
-                            productImage.push('latest')
-                        } catch (Exception e) {
-                            error "Failed to push Docker image: ${e.getMessage()}"
-                        }
+                        productImage.push()
+                        productImage.push('latest')
                     }
                 }
             }
