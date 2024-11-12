@@ -12,7 +12,9 @@ pipeline {
             steps {
                 echo 'Building microservices...'
                 dir('product') {
-                    sh 'python -m pip install -r requirements.txt'
+                    sh '''
+                        python3 -m pip install --user -r requirements.txt
+                    '''
                 }
             }
         }
@@ -20,7 +22,9 @@ pipeline {
         stage('Test') {
             steps {
                 dir('product') {
-                    sh 'python -m pytest tests/ || true'
+                    sh '''
+                        python3 -m pytest tests/ || true
+                    '''
                 }
             }
         }
@@ -28,7 +32,6 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    // Build Docker images
                     dir('product') {
                         docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
                     }
