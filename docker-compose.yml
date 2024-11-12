@@ -6,15 +6,17 @@ services:
       - "5001:5001"
     networks:
       - microservices-network
+    restart: unless-stopped
 
-  product-service:
-    build: ./product-service
+  order-service:
+    build: ./order-service
     ports:
       - "5002:5002"
     depends_on:
       - user-service
     networks:
       - microservices-network
+    restart: unless-stopped
 
 networks:
   microservices-network:
