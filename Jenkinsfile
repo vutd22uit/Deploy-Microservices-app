@@ -57,7 +57,8 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // Sử dụng docker-compose up để chạy container mới
+                // Xóa container cũ để tránh xung đột và triển khai container mới
+                sh 'docker-compose down || true'
                 sh 'docker-compose up -d'
             }
         }
