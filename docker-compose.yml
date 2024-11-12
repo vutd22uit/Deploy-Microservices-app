@@ -1,22 +1,20 @@
 version: '3'
 services:
   user-service:
-    build: ./user-service
+    build: ./user
     ports:
       - "5001:5001"
     networks:
       - microservices-network
-    restart: unless-stopped
 
   order-service:
-    build: ./order-service
+    build: ./order
     ports:
       - "5002:5002"
     depends_on:
       - user-service
     networks:
       - microservices-network
-    restart: unless-stopped
 
 networks:
   microservices-network:
