@@ -10,20 +10,22 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Building microservices...'
-                dir('product') {
-                    sh '''
-                        python3 -m pip install --user -r requirements.txt
-                    '''
+                dir('user') {
+                    sh 'python3 -m pip install --user -r requirements.txt'
+                }
+                dir('order') {
+                    sh 'python3 -m pip install --user -r requirements.txt'
                 }
             }
         }
         
         stage('Test') {
             steps {
-                dir('product') {
-                    sh '''
-                        python3 -m pytest tests/ || true
-                    '''
+                dir('user') {
+                    sh 'python3 -m pytest tests/ || true'
+                }
+                dir('order') {
+                    sh 'python3 -m pytest tests/ || true'
                 }
             }
         }
@@ -31,8 +33,11 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    dir('product') {
-                        docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
+                    dir('user') {
+                        docker.build("${DOCKER_USER}/user-service:${BUILD_NUMBER}")
+                    }
+                    dir('order') {
+                        docker.build("${DOCKER_USER}/order-service:${BUILD_NUMBER}")
                     }
                 }
             }
@@ -49,8 +54,10 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}").push()
-                    docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}").push('latest')
+                    docker.image("${DOCKER_USER}/user-service:${BUILD_NUMBER}").push()
+                    docker.image("${DOCKER_USER}/user-service:${BUILD_NUMBER}").push('latest')
+                    docker.image("${DOCKER_USER}/order-service:${BUILD_NUMBER}").push()
+                    docker.image("${DOCKER_USER}/order-service:${BUILD_NUMBER}").push('latest')
                 }
             }
         }
