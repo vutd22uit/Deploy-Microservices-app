@@ -65,8 +65,12 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // Xóa các container cũ và triển khai container mới
+                // Dừng container cũ và kiểm tra cổng
                 sh 'docker-compose down --remove-orphans || true'
+                sh 'docker-compose down --remove-orphans || true'
+                sh 'fuser -k 5001/tcp || true'
+                
+                // Khởi động container mới
                 sh 'docker-compose up -d --remove-orphans'
             }
         }
@@ -75,7 +79,7 @@ pipeline {
     post {
         always {
             echo 'Cleaning up workspace...'
-            cleanWs() // chỉ dọn dẹp workspace, không xóa container
+            cleanWs()
         }
         success {
             echo 'Pipeline succeeded!'
