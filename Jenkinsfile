@@ -43,8 +43,12 @@ pipeline {
                 script {
                     docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
                         def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
-                        productImage.push()
-                        productImage.push('latest')
+                        try {
+                            productImage.push()
+                            productImage.push('latest')
+                        } catch (Exception e) {
+                            error "Failed to push Docker image: ${e.getMessage()}"
+                        }
                     }
                 }
             }
