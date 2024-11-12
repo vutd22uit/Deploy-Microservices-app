@@ -32,8 +32,16 @@ pipeline {
             steps {
                 script {
                     dir('product') {
-                        def productImage = docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
+                        docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
                     }
+                }
+            }
+        }
+        
+        stage('Docker Login') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker-credentials', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin'
                 }
             }
         }
@@ -41,18 +49,14 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
-                        def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
-                        productImage.push()
-                        productImage.push('latest')
-                    }
+                    docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}").push()
+                    docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}").push('latest')
                 }
             }
         }
         
         stage('Deploy') {
             steps {
-                echo 'Deploying application...'
                 sh 'docker-compose up -d'
             }
         }
@@ -60,7 +64,8 @@ pipeline {
     
     post {
         always {
-            echo 'Cleaning up workspace...'
+            echo 'Cleaning up...'
+            sh 'docker-compose down || true'
             cleanWs()
         }
         success {
