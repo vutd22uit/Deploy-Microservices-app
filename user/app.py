@@ -7,13 +7,11 @@ users = []
 
 @app.route('/users', methods=['GET'])
 def get_users():
-    return jsonify(users), 200
+    return jsonify(users)
 
 @app.route('/users', methods=['POST'])
 def create_user():
     user = request.json
-    if not user or 'name' not in user:
-        return jsonify({'error': 'Invalid data'}), 400
     user['id'] = len(users) + 1
     users.append(user)
     return jsonify(user), 201
@@ -22,7 +20,7 @@ def create_user():
 def get_user(user_id):
     user = next((user for user in users if user['id'] == user_id), None)
     if user:
-        return jsonify(user), 200
+        return jsonify(user)
     return jsonify({'error': 'User not found'}), 404
 
 if __name__ == '__main__':
