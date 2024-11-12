@@ -32,7 +32,7 @@ pipeline {
             steps {
                 script {
                     dir('product') {
-                        def productImage = docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
+                        docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
                     }
                 }
             }
@@ -49,11 +49,8 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
-                        def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
-                        productImage.push()
-                        productImage.push('latest')
-                    }
+                    docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}").push()
+                    docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}").push('latest')
                 }
             }
         }
