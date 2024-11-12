@@ -10,25 +10,17 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                script {
-                    node {
-                        echo 'Building microservices...'
-                        dir('product') {
-                            sh 'python -m pip install -r requirements.txt'
-                        }
-                    }
+                echo 'Building microservices...'
+                dir('product') {
+                    sh 'python -m pip install -r requirements.txt'
                 }
             }
         }
         
         stage('Test') {
             steps {
-                script {
-                    node {
-                        dir('product') {
-                            sh 'python -m pytest tests/ || true'
-                        }
-                    }
+                dir('product') {
+                    sh 'python -m pytest tests/ || true'
                 }
             }
         }
@@ -36,11 +28,9 @@ pipeline {
         stage('Docker Build') {
             steps {
                 script {
-                    node {
-                        // Build Docker images
-                        dir('product') {
-                            docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
-                        }
+                    // Build Docker images
+                    dir('product') {
+                        docker.build("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
                     }
                 }
             }
@@ -49,12 +39,10 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    node {
-                        docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
-                            def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
-                            productImage.push()
-                            productImage.push('latest')
-                        }
+                    docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS) {
+                        def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
+                        productImage.push()
+                        productImage.push('latest')
                     }
                 }
             }
@@ -62,32 +50,22 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                script {
-                    node {
-                        sh 'docker-compose up -d'
-                    }
-                }
+                sh 'docker-compose up -d'
             }
         }
     }
     
     post {
         always {
-            node {
-                echo 'Cleaning up...'
-                sh 'docker-compose down || true'
-                cleanWs()
-            }
+            echo 'Cleaning up...'
+            sh 'docker-compose down || true'
+            cleanWs()
         }
         success {
-            node {
-                echo 'Pipeline succeeded!'
-            }
+            echo 'Pipeline succeeded!'
         }
         failure {
-            node {
-                echo 'Pipeline failed!'
-            }
+            echo 'Pipeline failed!'
         }
     }
 }
