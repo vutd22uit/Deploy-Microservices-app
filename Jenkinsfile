@@ -4,7 +4,6 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_USER = 'vutd22uit'
-        DOCKER_CREDENTIALS = credentials('docker-credentials')
     }
     
     stages {
@@ -42,7 +41,7 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    docker.withRegistry("https://${DOCKER_REGISTRY}", DOCKER_CREDENTIALS) {
+                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
                         def productImage = docker.image("${DOCKER_USER}/product-service:${BUILD_NUMBER}")
                         productImage.push()
                         productImage.push('latest')
