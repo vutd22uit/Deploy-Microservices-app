@@ -67,9 +67,6 @@ pipeline {
             steps {
                 // Dừng container cũ và kiểm tra cổng
                 sh 'docker-compose down --remove-orphans || true'
-                sh 'docker-compose down --remove-orphans || true'
-                sh 'fuser -k 5001/tcp || true'
-                
                 // Khởi động container mới
                 sh 'docker-compose up -d --remove-orphans'
             }
