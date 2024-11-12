@@ -56,6 +56,7 @@ pipeline {
                 script {
                     docker.image("${DOCKER_USER}/user-service:${BUILD_NUMBER}").push()
                     docker.image("${DOCKER_USER}/user-service:${BUILD_NUMBER}").push('latest')
+                    
                     docker.image("${DOCKER_USER}/order-service:${BUILD_NUMBER}").push()
                     docker.image("${DOCKER_USER}/order-service:${BUILD_NUMBER}").push('latest')
                 }
@@ -64,9 +65,9 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // Xóa container cũ để tránh xung đột và triển khai container mới
-                sh 'docker-compose down || true'
-                sh 'docker-compose up -d'
+                // Xóa các container cũ và triển khai container mới
+                sh 'docker-compose down --remove-orphans || true'
+                sh 'docker-compose up -d --remove-orphans'
             }
         }
     }
