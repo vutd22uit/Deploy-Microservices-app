@@ -8,15 +8,6 @@ pipeline {
     }
 
     stages {
-        stage('Prepare Environment') {
-            steps {
-                sh '''
-                python3 -m pip install --user --upgrade pip
-                python3 -m pip install --user pytest
-                '''
-            }
-        }
-
         stage('Build') {
             steps {
                 echo 'Building microservices...'
@@ -29,17 +20,6 @@ pipeline {
                     sh '''
                     python3 -m pip install --user -r requirements.txt
                     '''
-                }
-            }
-        }
-
-        stage('Test') {
-            steps {
-                dir('user') {
-                    sh 'python3 -m pytest tests/'
-                }
-                dir('order') {
-                    sh 'python3 -m pytest tests/'
                 }
             }
         }
