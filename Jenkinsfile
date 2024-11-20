@@ -28,10 +28,16 @@ pipeline {
             steps {
                 script {
                     dir('user') {
-                        sh "docker build -t ${DOCKER_USER}/user-service:${env.BUILD_NUMBER} ."
+                        sh """
+                        docker build -t ${DOCKER_USER}/user-service:${env.BUILD_NUMBER} .
+                        docker tag ${DOCKER_USER}/user-service:${env.BUILD_NUMBER} ${DOCKER_USER}/user-service:latest
+                        """
                     }
                     dir('order') {
-                        sh "docker build -t ${DOCKER_USER}/order-service:${env.BUILD_NUMBER} ."
+                        sh """
+                        docker build -t ${DOCKER_USER}/order-service:${env.BUILD_NUMBER} .
+                        docker tag ${DOCKER_USER}/order-service:${env.BUILD_NUMBER} ${DOCKER_USER}/order-service:latest
+                        """
                     }
                 }
             }
