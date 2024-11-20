@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_USER = 'vutd22uit'
-        PATH = "/var/lib/jenkins/.local/bin:$PATH"
+        SONARQUBE_ENV = 'SonarQube' // Tên server SonarQube trong Jenkins
     }
 
     stages {
@@ -12,14 +12,33 @@ pipeline {
             steps {
                 echo 'Building microservices...'
                 dir('user') {
-                    sh '''
-                    python3 -m pip install --user -r requirements.txt
-                    '''
+                    sh 'python3 -m pip install --user -r requirements.txt'
                 }
                 dir('order') {
-                    sh '''
-                    python3 -m pip install --user -r requirements.txt
-                    '''
+                    sh 'python3 -m pip install --user -r requirements.txt'
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv("${SONARQUBE_ENV}") { // Tích hợp SonarQube
+                        sh '''
+                        sonar-scanner \
+                            -Dsonar.projectKey=user-service \
+                            -Dsonar.sources=user \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                        sh '''
+                        sonar-scanner \
+                            -Dsonar.projectKey=order-service \
+                            -Dsonar.sources=order \
+                            -Dsonar.host.url=$SONAR_HOST_URL \
+                            -Dsonar.login=$SONAR_AUTH_TOKEN
+                        '''
+                    }
                 }
             }
         }
@@ -28,16 +47,10 @@ pipeline {
             steps {
                 script {
                     dir('user') {
-                        sh """
-                        docker build -t ${DOCKER_USER}/user-service:${env.BUILD_NUMBER} .
-                        docker tag ${DOCKER_USER}/user-service:${env.BUILD_NUMBER} ${DOCKER_USER}/user-service:latest
-                        """
+                        docker.build("${DOCKER_USER}/user-service:${BUILD_NUMBER}")
                     }
                     dir('order') {
-                        sh """
-                        docker build -t ${DOCKER_USER}/order-service:${env.BUILD_NUMBER} .
-                        docker tag ${DOCKER_USER}/order-service:${env.BUILD_NUMBER} ${DOCKER_USER}/order-service:latest
-                        """
+                        docker.build("${DOCKER_USER}/order-service:${BUILD_NUMBER}")
                     }
                 }
             }
@@ -54,18 +67,21 @@ pipeline {
         stage('Docker Push') {
             steps {
                 script {
-                    sh "docker push ${DOCKER_USER}/user-service:${env.BUILD_NUMBER}"
-                    sh "docker push ${DOCKER_USER}/user-service:latest"
-                    sh "docker push ${DOCKER_USER}/order-service:${env.BUILD_NUMBER}"
-                    sh "docker push ${DOCKER_USER}/order-service:latest"
+                    docker.image("${DOCKER_USER}/user-service:${BUILD_NUMBER}").push()
+                    docker.image("${DOCKER_USER}/user-service:${BUILD_NUMBER}").push('latest')
+                    
+                    docker.image("${DOCKER_USER}/order-service:${BUILD_NUMBER}").push()
+                    docker.image("${DOCKER_USER}/order-service:${BUILD_NUMBER}").push('latest')
                 }
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker-compose down --remove-orphans || true'
-                sh 'docker-compose up -d --remove-orphans'
+                sh '''
+                docker-compose down --remove-orphans || true
+                docker-compose up -d --remove-orphans
+                '''
             }
         }
     }
