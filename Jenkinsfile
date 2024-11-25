@@ -4,7 +4,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_USER = 'vutd22uit'
-        SONARQUBE_ENV = 'SonarQube' // Tên server SonarQube trong Jenkins
+        SONARQUBE_ENV = 'SonarQube' 
     }
 
     stages {
